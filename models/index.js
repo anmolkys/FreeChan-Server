@@ -23,6 +23,7 @@ db.sequelize = sequelize;
 db.Boards = require("./boards.js")(sequelize, Sequelize);
 db.Threads = require("./threads.js")(sequelize,Sequelize);
 db.Comments = require("./comments.js")(sequelize,Sequelize);
+db.Users = require("./users.js")(sequelize,Sequelize);
 
 
 db.Threads.belongsTo(db.Boards, { foreignKey: 'board_id', constraints: true, as: 'boards' });

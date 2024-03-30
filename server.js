@@ -23,7 +23,8 @@ app.get("/ping", (req, res) => {
 //1) Boards
     // 1) POST /api/boards - create board
     // 2) GET /api/boards/:slug/:page - get Board and paginated pages
-require("./routes/boards.routes")(app);   
+require("./routes/boards.routes")(app);
+require("./routes/login.routes")(app);   
 
 
 //DB Sync
