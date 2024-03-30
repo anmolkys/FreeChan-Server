@@ -14,22 +14,19 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
+
 app.get("/ping", (req, res) => {
-    res.status(200).send({ message: `Server Live on Version ${VERSION}` });
+    res.status(200).send({ message: `Server Live on Version ${VERSION}` , version : VERSION });
 });
 
 
-//Routes
-//1) Boards
-    // 1) POST /api/boards - create board
-    // 2) GET /api/boards/:slug/:page - get Board and paginated pages
 require("./routes/boards.routes")(app);
 require("./routes/login.routes")(app);   
 
 
 //DB Sync
 const PORT = process.env.PORT || 5500;
-db.sequelize.sync()
+db.sequelize.sync({force:true})
     .then(() => {
         console.log("[📂] : Synced db.");
         server.listen(PORT, () => { console.log(`[☎️] : Listening on ${PORT}`) })
@@ -37,4 +34,3 @@ db.sequelize.sync()
     .catch((err) => {
         console.log("Failed to sync db: " + err.message);
     });
-

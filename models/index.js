@@ -12,7 +12,8 @@ const sequelize = new Sequelize(process.env.DB, {
         min: dbConfig.pool.min,
         acquire: dbConfig.pool.acquire,
         idle: dbConfig.pool.idle
-    }
+    },
+    logging: process.env.NODE_ENV === 'production' ? false : console.log
 })
 
 const db = {};

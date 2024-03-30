@@ -10,12 +10,19 @@ module.exports = (sequelize, Sequelize) =>{
         username: {
             type: Sequelize.STRING(150),
             field: 'username',
-            allowNull: false
+            allowNull: false,
+            unique:true
         },
         password: {
             type: Sequelize.STRING(150),
             field: 'password',
             allowNull: false
+        },
+        roles:{ 
+            type: Sequelize.STRING(150),
+            field:'roles',
+            allowNull:true,
+            defaultValue: 'user'
         }
     });
 
