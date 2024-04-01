@@ -15,10 +15,12 @@
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "ejs": "^3.1.9",
     "express": "^4.19.1",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
+    "redis": "^4.6.13",
     "sequelize": "^6.37.1"
   },
   "devDependencies": {

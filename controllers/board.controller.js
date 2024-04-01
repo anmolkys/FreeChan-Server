@@ -6,12 +6,6 @@ const Op = db.Sequelize.Op;
 const dotenv = require("dotenv")
 dotenv.config()
 
-// req = {
-//     key : "string to check",
-//     name : "string name of board",
-//     slug : "human readable identifier"
-// }
-
 
 const key = process.env.SECRET;
 
@@ -44,18 +38,39 @@ exports.boardCreate = (req,res) => {
 // /:slug/:page
 
 
-exports.findBoardBySlug = (req, res) => {
+exports.findBoardBySlug = async (req, res) => {
+    const slug = req.params.slug;
 
-    Boards.findOne({
-        where:{
-            slug : req.params.slug
+    // Check if data exists in Redis cache
+    req.redisClient.get(slug).then((cachedBoard) => {
+        if (cachedBoard) {
+            //data found in cache
+            res.status(200).json({ board: JSON.parse(cachedBoard) });
+        } else {
+            // Data not found in Redis cache, fetch from database
+            Boards.findOne({
+                where: {
+                    slug: slug
+                }
+            }).then((board) => {
+                if (!board) {
+                    //board not found
+                    res.status(404).json({ message: "Board not found" });
+                    return;
+                }
+                //setting cache - board found
+                req.redisClient.set(slug, JSON.stringify(board), 'EX', 112);
+                res.status(200).json({ board: board });
+            }).catch((err) => {
+                //cannot query data
+                res.status(500).send({message:"Internal Server Error"});
+            });
         }
-    }).then((board)=>{
-        if(board==null){res.status(400).send({"message":"oopsies Board does not exist"}); return}
-        res.status(200).send({board:board});
-    })
-
-}
+    }).catch((err) => {
+        console.error(`Redis error: ${err}`);
+        res.status(500).send("Internal Server Error");
+    });
+};
 
 
 
