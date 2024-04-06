@@ -6,7 +6,6 @@ module.exports = boardApp =>{
 
 
     router.get("/:slug/:page",boardController.findBoardBySlugAndPage);
-    router.get("/:slug", boardController.findBoardBySlug);
     router.get("/:slug/thread/:thread_id",boardController.findSingleThread);
 
     router.post("/", authenticateToken ,boardController.boardCreate);

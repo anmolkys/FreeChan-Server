@@ -35,6 +35,25 @@ exports.boardCreate = (req,res) => {
 
 }
 
+
+exports.findAllBoards = (req, res) => {
+    req.redisClient.get("boards").then((cachedBoard) => {
+        if (cachedBoard) {
+            res.status(200).render("home.ejs", { slugs: JSON.parse(cachedBoard)});
+            //res.status(200).json({ slugs: JSON.parse(cachedBoard) });
+        } else {
+            Boards.findAll({
+                attributes: { exclude: ['createdAt', 'updatedAt', 'id', 'name'] }
+            }).then((slugs) => {
+                req.redisClient.set("boards", JSON.stringify(slugs), 'EX', 3600);
+                res.status(200).render("home.ejs", { slugs: slugs })
+            })
+        }
+
+    }
+)}
+
+
 // /:slug/:page
 
 
@@ -62,7 +81,6 @@ exports.findBoardBySlug = async (req, res) => {
                 req.redisClient.set(slug, JSON.stringify(board), 'EX', 112);
                 res.status(200).json({ board: board });
             }).catch((err) => {
-                //cannot query data
                 res.status(500).send({message:"Internal Server Error"});
             });
         }
@@ -89,19 +107,24 @@ exports.findBoardBySlugAndPage = (req, res) => {
 
             const threadDefined = {
                 where: { board_id: board.id },
-                offset: offSet,
-                limit: totalThreads,
-                order: "createdAt DESC",
-                include: [{ model: Comments, as: "comments", limit: 5, order: "createdAt DESC" }]
+                offset: totalThreads,
+                limit: threadsPerPage,
+                order: [["createdAt","DESC"]],
+                include: [{ model: Comments, as: "comments", limit: 5, order: [["createdAt","DESC"]] }],
             }
 
             if((!isNaN(req.params.page)  || req.params.page === undefined) &&(pages < totalPages)){
                 Threads.findAll(threadDefined).then((threads)=>{
-                    threads.pagination = {
+                    if (threads.length === 0){
+                        res.status(200).render("empty.ejs");
+                    }
+                    else{threads.pagination = {
                         nextPage: pages < totalPages - 2 ? pages + 2 : undefined
                     }
-                    res.status(200).send({board: board, threads: threads});
+                    res.status(200).render("boards.ejs",{board: board, threads: threads})}
+                    //res.status(200).send({board: board, threads: threads});
                 }).catch((err)=>{
+                    console.log(err)
                     res.status(500).send({ message: 'Something went wrong!' });
                 });
             }else{
@@ -116,30 +139,42 @@ exports.findBoardBySlugAndPage = (req, res) => {
 };
 
 
+
 // Get one thread
 exports.findSingleThread = (req, res) => {
-    Boards.findOne({
-        where:{
-            slug:req.params.slug
-        }
-    }).then((board)=>{
-        if(board == null){
-            res.status(400).send({message:"Error Loading Thread , Board not found"})
-        }
-        else{
-            if(!isNaN(req.params.thread_id)){
-                Threads.findByPk(req.params.thread_id, {include: [ {model: Comments, as: "comments", order: "createdAt ASC"}]}).then((thread)=>{
-                    res.status(200).send({board:board,thread:thread});
-                })
-            }else{
-                res.send(400).send({message:"Thread not found"})
+    const thread_id = req.params.thread_id
+    req.redisClient.get(thread_id).then((cachedBoard) => {
+        if (cachedBoard) {
+            //console.log("using cache");
+            const content = JSON.parse(cachedBoard);
+            res.status(200).render("thread.ejs", { board: content.board , thread:content.thread });
+            //res.status(200).json({ slugs: JSON.parse(cachedBoard) });
+        } else {
+            Boards.findOne({
+                where: {
+                    slug: req.params.slug
+                }
+            }).then((board) => {
+                if (board == null) {
+                    res.status(400).send({ message: "Error Loading Thread , Board not found" })
+                }
+                else {
+                    if (!isNaN(req.params.thread_id)) {
+                        Threads.findByPk(req.params.thread_id, { include: [{ model: Comments, as: "comments", order: "createdAt ASC" }] }).then((thread) => {
+                            req.redisClient.set(thread_id, JSON.stringify({board:board,thread:thread}), 'EX', 900);
+                            res.status(200).render("thread.ejs", { board: board, thread: thread });
+                        })
+                    } else {
+                        res.send(400).send({ message: "Thread not found" })
+                    }
+                }
+            }).catch((err) => {
+                console.log(err)
+                res.status(500).send({ message: "Something went wrong" })
             }
+            )
         }
-    }).catch((err)=>{
-        console.log(err)
-        res.status(500).send({message:"Something went wrong"})
-    }
-)};
+})}
 
 
 //Create Thread - POST
@@ -204,7 +239,7 @@ exports.createComment = (req,res) =>{
                             replyTo:req.body.replyTo || null
                         }).then((comment)=>{
                             Threads.update({createdAt: comment.createdAt}, {where:{id: req.params.thread_id}});
-                            res.status(400).send({comment:comment})
+                            res.status(200).send({comment:comment})
                         })
                     }
                 })

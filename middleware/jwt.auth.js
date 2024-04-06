@@ -1,12 +1,12 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const CryptoJS = require("crypto-js")
 dotenv.config();
 
 const key = process.env.ACCESS_TOKEN_SECRET;
 
 async function authenticateToken(req, res, next) {
   const token = req.query.ats;
-
   if (token == null) {
     return res.status(401).send({ message: "Token not found" });
   }

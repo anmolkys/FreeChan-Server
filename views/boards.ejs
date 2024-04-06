@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/<%= board.slug %></title>
+    <link rel="stylesheet" href="/boards.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.png">
+</head>
+
+<body>
+    <ul>
+    <% threads.forEach(thread=> { %>
+        <li>
+            <div class="threadBody">
+                <div class="threadHeading"><h3><a href="/api/boards/<%= board.slug %>/thread/<%= thread.id%>"><%= thread.subject  %></a></h3><h6>~ <%= thread.author  %></h6></div>
+                <p><%= thread.comment  %></p>
+            </div>
+        </li>
+        <% }) %>
+    </ul>
+</body>
+
+</html>
+

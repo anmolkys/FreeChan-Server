@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Chan</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.png">
+    <link rel="stylesheet" href="/home.css">
+</head>
+<body>
+    <h1>Welcome to FreeChan</h1>
+    <h3>Explore one of the boards below</h3>
+    <div class="board-container">
+        <% slugs.forEach(slug => { %>
+        <div class="board">
+            <li><a href="/api/boards/<%= slug.slug %>/1">/<%= slug.slug %></a></li>
+        </div>
+        <% }) %>
+    </div>
+</body>
+</html>

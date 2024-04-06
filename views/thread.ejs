@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= thread.subject %> - <%= board.slug %></title>
+    <link rel="stylesheet" href="/boards.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.png">
+</head>
+
+<body>
+    <div class="threadBody">
+        <div class="threadHeading">
+            <h3><%= thread.subject %></h3>
+            <h6>~ <%= thread.author %></h6>
+        </div>
+        <p><%= thread.comment %></p>
+    </div>
+
+    <h2>Comments:</h2>
+    <ul>
+        <% thread.comments.forEach(comment => { %>
+        <li>
+            <div class="commentBody">
+                <h6><%= comment.author %></h6>
+                <p><%= comment.comment %></p>
+                <h5>~ <%= comment.createdAt %> ~</h5>
+            </div>
+        </li>
+        <% }) %>
+    </ul>
+
+    <button id="showFormBtn">Post Comment</button>
+
+    <form id="commentForm" style="display: none;" action="/post-comment" method="POST">
+        <input type="text" name="author" placeholder="Your Name"><br>
+        <textarea name="comment" placeholder="Your Comment"></textarea><br>
+        <!-- Add other form fields here -->
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.getElementById('showFormBtn').addEventListener('click', function() {
+            var form = document.getElementById('commentForm');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

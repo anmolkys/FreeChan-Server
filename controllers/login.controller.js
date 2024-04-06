@@ -2,6 +2,7 @@ const db = require("../models/index");
 const bcrypt = require("bcrypt")
 const dotenv = require("dotenv")
 const jwt = require("jsonwebtoken")
+const CryptoJS = require("crypto-js");
 const Users = db.Users;
 const Op = db.Sequelize.Op;
 dotenv.config()
@@ -17,7 +18,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
         const accessToken = jwt.sign({user:username}, key, { expiresIn: '1h', algorithm: 'HS256' });
-        res.status(200).send({ Token: accessToken });
+        res.status(200).send({token:accessToken})
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Internal server error' });
